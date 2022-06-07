@@ -1,0 +1,18 @@
+datetimerange
+flask
+flask-jwt-extended
+flask-mail
+flask-marshmallow
+flask-migrate
+flask-sqlalchemy
+geonamescache
+gunicorn
+marshmallow-sqlalchemy
+passlib[argon2]
+psycopg2
+requests
+wheel
+
+# celery
+celery[redis]
+flower
