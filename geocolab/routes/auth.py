@@ -93,10 +93,9 @@ def register():
     email = request.json.get('email')
     if User.query.filter_by(email=email).one_or_none():
         return jsonify({'errors': ['Email address already in use.']}), 401
-    name = request.json.get('name')
-    country = request.json.get('country')
+    user_dict = UserSchema().load(request.json)
+    new_user = User(**user_dict)
     password = request.json.get('password')
-    new_user = User(email=email, name=name, country=country)
     new_user.password_set(password)
     db.session.add(new_user)
     db.session.commit()

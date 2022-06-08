@@ -3,12 +3,14 @@
 
 from ..extensions import ma
 from ..models import User
+from marshmallow import EXCLUDE
 
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
         exclude = ['password']
+        unknown = EXCLUDE
 
     name = ma.Str()
     todo = ma.List(ma.Str)
