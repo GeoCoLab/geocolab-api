@@ -17,7 +17,7 @@ def get_database_url():
 
 
 def get_broker_url():
-    broker_url = os.environ.get('CELERY_BROKER_URL')
+    broker_url = os.environ.get('RABBITMQ_URL')
     if broker_url:
         return broker_url
     username = os.environ.get('RABBITMQ_DEFAULT_USER')
@@ -44,10 +44,5 @@ class Config(object):
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL') or 'geocolab.app@gmail.com'
 
     CELERY_BROKER_URL = get_broker_url()
-    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULTS_BACKEND')
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULTS_BACKEND', os.environ.get('REDIS_URL'))
 
-    FRONTEND_HOST = os.environ.get('FRONTEND_HOST', 'http://localhost:3000')
-
-    MONGODB_HOST = 'mongo'
-    MONGODB_PORT = '27017'
-    MONGODB_DB = 'geocolab-dev'
