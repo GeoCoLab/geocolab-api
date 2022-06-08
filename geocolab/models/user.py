@@ -55,4 +55,4 @@ class User(db.Model):
         total = len(role_tasks.get(self.role, []))
         if total == 0:
             return 100
-        return round((todo/total)*100)
+        return round(((total-todo)/total)*100)
