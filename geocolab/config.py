@@ -33,6 +33,7 @@ class Config(object):
     JWT_SECRET_KEY = os.environ.get('SECRET')
     JWT_TOKEN_LOCATION = ['headers', 'cookies']
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
+    JWT_SESSION_COOKIE = False
 
     ROOT_DIR = root
     STATIC_DIR = os.environ.get('STATIC_DIR', os.path.join(root, 'static'))
