@@ -17,11 +17,12 @@ bp = Blueprint('auth', __name__)
 
 def login_user(user_object, remember=False):
     """
-    Shared method between login and register.
+    Shared method between login, register, and refresh_jwt.
     """
     user_dict = UserSchema().dump(user_object)
-    access_token = create_access_token(identity=user_object, additional_claims={'user': user_dict})
-    refresh_exp = timedelta(days=28) if remember else timedelta(hours=1)
+    access_token = create_access_token(identity=user_object,
+                                       additional_claims={'user': user_dict, 'remember': remember})
+    refresh_exp = timedelta(days=28) if remember else timedelta(hours=2)
     refresh_token = create_refresh_token(identity=user_object, expires_delta=refresh_exp)
     response = jsonify(user_dict)
     set_access_cookies(response, access_token)
@@ -48,11 +49,9 @@ def refresh_csrf():
 @bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh_jwt():
-    identity = current_user
-    access_token = create_access_token(identity=identity)
-    response = jsonify(access_token=access_token)
-    set_access_cookies(response, access_token)
-    return response
+    current_jwt = get_jwt_header()
+    remember = current_jwt.get('additional_claims', {}).get('remember', False)
+    return login_user(current_user, remember)
 
 
 @bp.route('/user')
