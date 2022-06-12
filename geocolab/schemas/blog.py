@@ -3,6 +3,7 @@
 
 from ..extensions import ma
 from ..models import BlogTag, BlogPost, BlogAuthor
+from marshmallow import INCLUDE
 
 
 class BlogAuthorSchema(ma.SQLAlchemyAutoSchema):
@@ -24,6 +25,7 @@ class BlogTagSchema(ma.SQLAlchemyAutoSchema):
 class BlogPostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = BlogPost
+        unknown = INCLUDE
 
     tags = ma.List(ma.Nested(BlogTagSchema))
     author = ma.Nested(BlogAuthorSchema)
