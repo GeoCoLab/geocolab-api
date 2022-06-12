@@ -5,11 +5,11 @@ from datetime import timedelta
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import current_user, create_access_token, set_access_cookies, jwt_required, \
-    unset_jwt_cookies, create_refresh_token, set_refresh_cookies
+    unset_jwt_cookies, create_refresh_token, set_refresh_cookies, get_jwt_header
 
+from ._decorators import admin_required
 from ..extensions import jwt_manager, db
 from ..models import User
-from ._decorators import admin_required
 from ..schemas import UserSchema
 
 bp = Blueprint('auth', __name__)
@@ -41,9 +41,12 @@ def user_lookup_callback(jwt_header, jwt_data):
     return User.query.get(identity)
 
 
-@bp.route('/csrf', methods=['GET'])
-def refresh_csrf():
-    return jsonify('')
+@jwt_manager.expired_token_loader
+def expired_token_loader(jwt_header, jwt_payload):
+    response = jsonify({'errors': ['Token has expired']}), 401
+    if jwt_payload['type'] == 'refresh':
+        unset_jwt_cookies(response)
+    return response
 
 
 @bp.route('/refresh', methods=['POST'])
