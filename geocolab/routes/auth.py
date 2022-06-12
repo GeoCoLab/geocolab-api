@@ -58,7 +58,7 @@ def refresh_jwt():
 
 
 @bp.route('/user')
-@jwt_required()
+@jwt_required(optional=True)
 def get_user():
     return jsonify(UserSchema().dump(current_user))
 
