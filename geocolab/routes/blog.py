@@ -4,6 +4,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, current_user
 
+from ._decorators import admin_required
 from ..extensions import db
 from ..models import BlogPost, BlogAuthor
 from ..schemas import BlogPostSchema, BlogSummarySchema, BlogAuthorSchema
@@ -24,6 +25,21 @@ def get_post_by_slug(slug):
     post = BlogPost.query.filter_by(slug=slug).one_or_none()
     if not post:
         return jsonify({'error': 'Post not found.'}), 404
+    return jsonify(BlogPostSchema().dump(post))
+
+
+@bp.route('/save', methods=['POST'])
+@admin_required
+def save_post():
+    post_dict = BlogPostSchema().load(request.json)
+    if post_dict.get('id'):
+        post = BlogPost.query.get(post_dict.get('id'))
+        for k, v in post_dict.items():
+            setattr(post, k, v)
+    else:
+        post = BlogPost(**post_dict)
+    db.session.add(post)
+    db.session.commit()
     return jsonify(BlogPostSchema().dump(post))
 
 
