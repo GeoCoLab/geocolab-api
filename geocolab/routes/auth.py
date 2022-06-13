@@ -3,7 +3,7 @@
 
 from datetime import timedelta
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response
 from flask_jwt_extended import current_user, create_access_token, set_access_cookies, jwt_required, \
     unset_jwt_cookies, create_refresh_token, set_refresh_cookies, get_jwt_header
 
@@ -43,7 +43,7 @@ def user_lookup_callback(jwt_header, jwt_data):
 
 @jwt_manager.expired_token_loader
 def expired_token_loader(jwt_header, jwt_payload):
-    response = jsonify({'errors': ['Token has expired']}), 401
+    response = make_response(jsonify({'errors': [f'{jwt_payload["type"]} token has expired']}), 401)
     if jwt_payload['type'] == 'refresh':
         unset_jwt_cookies(response)
     return response
