@@ -6,7 +6,8 @@ from ..extensions import db, crypt
 role_tasks = {
     'researcher': ['edi', 'edi_extra'],
     'manager': [],
-    'admin': []
+    'admin': [],
+    'basic': []
 }
 
 
@@ -19,7 +20,7 @@ class User(db.Model):
     given_name_first = db.Column(db.Boolean, nullable=False, server_default='1')
     created = db.Column(db.DateTime(), server_default=func.now())
     country = db.Column(countries_enum)
-    role = db.Column(user_types_enum, server_default='researcher')
+    role = db.Column(user_types_enum, server_default='basic', nullable=False)
     pronouns = db.Column(db.String(50))
 
     def password_set(self, plaintext):
