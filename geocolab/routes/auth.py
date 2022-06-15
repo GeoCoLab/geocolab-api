@@ -1,33 +1,18 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from datetime import timedelta
-
-from flask import Blueprint, jsonify, request, make_response
-from flask_jwt_extended import current_user, create_access_token, set_access_cookies, jwt_required, \
-    unset_jwt_cookies, create_refresh_token, set_refresh_cookies, get_jwt_header
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import current_user, jwt_required, \
+    unset_jwt_cookies
 
 from ._decorators import admin_required
+from .utils import login_user, refresh_expiring_jwts
 from ..extensions import jwt_manager, db
-from ..models import User
+from ..models import User, Secret
 from ..schemas import UserSchema
+import json
 
 bp = Blueprint('auth', __name__)
-
-
-def login_user(user_object, remember=False):
-    """
-    Shared method between login, register, and refresh_jwt.
-    """
-    user_dict = UserSchema().dump(user_object)
-    access_token = create_access_token(identity=user_object,
-                                       additional_claims={'user': user_dict, 'remember': remember})
-    refresh_exp = timedelta(days=28) if remember else timedelta(hours=2)
-    refresh_token = create_refresh_token(identity=user_object, expires_delta=refresh_exp)
-    response = jsonify(user_dict)
-    set_access_cookies(response, access_token)
-    set_refresh_cookies(response, refresh_token)
-    return response
 
 
 @jwt_manager.user_identity_loader
@@ -41,26 +26,15 @@ def user_lookup_callback(jwt_header, jwt_data):
     return User.query.get(identity)
 
 
-@jwt_manager.expired_token_loader
-def expired_token_loader(jwt_header, jwt_payload):
-    response = make_response(jsonify({'errors': [f'{jwt_payload["type"]} token has expired']}), 401)
-    if jwt_payload['type'] == 'refresh':
-        unset_jwt_cookies(response)
-    return response
-
-
-@bp.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh_jwt():
-    current_jwt = get_jwt_header()
-    remember = current_jwt.get('additional_claims', {}).get('remember', False)
-    return login_user(current_user, remember)
-
-
 @bp.route('/user')
 @jwt_required(optional=True)
 def get_user():
-    return jsonify(UserSchema().dump(current_user))
+    logged_in = current_user is None
+    response = jsonify({})
+    if not logged_in:
+        response = refresh_expiring_jwts(response)
+    response.set_data(json.dumps(UserSchema().dump(current_user)))
+    return response
 
 
 @bp.route('/user/<user_id>')

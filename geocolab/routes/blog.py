@@ -38,6 +38,10 @@ def save_post():
             setattr(post, k, v)
     else:
         post = BlogPost(**post_dict)
+        current_author = BlogAuthor.query.filter_by(user_id=current_user.id).one_or_none()
+        if not current_author:
+            current_author = BlogAuthor.query.get(1)
+        post.author_id = current_author.id
     db.session.add(post)
     db.session.commit()
     return jsonify(BlogPostSchema().dump(post))
