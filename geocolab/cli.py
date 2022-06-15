@@ -3,7 +3,7 @@ from flask.cli import FlaskGroup
 
 from . import create_app
 from .extensions import db
-from .models import User
+from .models import User, Secret
 
 
 def create_cli_app():
@@ -26,8 +26,7 @@ def cli():
 
 @cli.command()
 @click.option('--email')
-@click.option('--pw')
-def make_admin(email, pw):
+def make_admin(email):
     if email:
         user = User.query.filter_by(email=email).one_or_none()
         if not user:
@@ -36,13 +35,24 @@ def make_admin(email, pw):
     else:
         user = User.query.filter_by(email='admin').one_or_none()
         if not user:
-            user = User(email='admin', given_name='Admin', family_name='Istrator', country='GB')
-            user.password_set(pw)
+            user = User(email='admin', given_name='GeoCoLab', family_name='Admin', country='GB')
+            user.password_set(click.prompt('Password', hide_input=True))
             db.session.add(user)
             db.session.commit()
     user.role = 'admin'
     db.session.commit()
     click.echo(f'Updated {email or "admin"}.')
+
+
+@cli.command()
+@click.argument('key')
+def set_secret(key):
+    secret = Secret.query.filter_by(key=key).one_or_none()
+    if not secret:
+        secret = Secret(key=key)
+        db.session.add(secret)
+    secret.value_set(click.prompt('Secret value', hide_input=True))
+    db.session.commit()
 
 
 if __name__ == '__main__':

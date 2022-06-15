@@ -102,3 +102,27 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     return login_user(new_user)
+
+
+@bp.route('/knock-knock', methods=['POST'])
+@jwt_required()
+def knock_knock():
+    """
+    Changes a user to admin if they provide the secret password.
+    """
+    password = request.json.get('password')
+    secret = Secret.query.get('knockknock')
+    if current_user.is_admin:
+        if not secret:
+            secret = Secret(key='knockknock')
+            db.session.add(secret)
+        secret.value_set(password)
+        return jsonify('Successfully set new passcode.')
+    if not secret:
+        return jsonify({'errors': ['No idea what this is but it hasn\'t been set up yet, sorry.']}), 401
+    if secret.value_verify(password):
+        current_user.role = 'admin'
+        db.session.commit()
+        return jsonify('Excellent.')
+    return jsonify({'errors': [f'I have no idea who this "{password}" is, but I think you have the wrong door.']}), 401
+

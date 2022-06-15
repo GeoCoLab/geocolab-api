@@ -9,5 +9,6 @@ from .offer import Offer
 from .org import Org
 from .slot import Slot
 from .associations import org_manager, facility_analyses, facility_manager, application_analyses
+from .secrets import Secret
 
 from .user_data import form_to_user_data
