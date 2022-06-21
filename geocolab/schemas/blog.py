@@ -3,12 +3,15 @@
 
 from ..extensions import ma
 from ..models import BlogTag, BlogPost, BlogAuthor
-from marshmallow import INCLUDE
+from marshmallow import INCLUDE, EXCLUDE
 
 
 class BlogAuthorSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = BlogAuthor
+        unknown = EXCLUDE
+        dump_only = ['gravatar', 'pronouns', 'posts', 'name']
+        include_fk = True
 
     name = ma.String()
     pronouns = ma.String()
@@ -37,4 +40,4 @@ class BlogSummarySchema(ma.SQLAlchemyAutoSchema):
         exclude = ['body']
 
     tags = ma.List(ma.Nested(BlogTagSchema))
-    author = ma.Nested(BlogAuthorSchema, only=['id', 'name'])
+    author = ma.Nested(BlogAuthorSchema, only=['id', 'name', 'gravatar'])

@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, current_user
 
 from ._decorators import admin_required
 from ..extensions import db
-from ..models import BlogPost, BlogAuthor
+from ..models import BlogPost, BlogAuthor, User
 from ..schemas import BlogPostSchema, BlogSummarySchema, BlogAuthorSchema
 
 bp = Blueprint('blog', __name__, url_prefix='/blog')
@@ -57,7 +57,7 @@ def get_summaries():
     return jsonify(BlogSummarySchema(many=True).dump(post_query.order_by(BlogPost.posted.desc()).all()))
 
 
-@bp.route('/author/<author_id>')
+@bp.route('/author/<author_id>', methods=['GET'])
 def author(author_id):
     author_object = BlogAuthor.query.get(author_id)
     if not author_object:
@@ -71,3 +71,21 @@ def author_posts(author_id):
     if not author_object:
         return jsonify({'error': 'Author not found.'}), 404
     return jsonify(BlogSummarySchema(many=True).dump(author_object.posts))
+
+
+@bp.route('/author/save', methods=['POST'])
+def save_author():
+    author_dict = BlogAuthorSchema().load(request.json)
+    user = User.query.get(author_dict.get('user_id'))
+    if user.email != author_dict['public_email']:
+        author_dict['email'] = author_dict['public_email']
+    del author_dict['public_email']
+    if author_dict.get('id'):
+        author_object = BlogAuthor.query.get(author_dict.get('id'))
+        for k, v in author_dict.items():
+            setattr(author_object, k, v)
+    else:
+        author_object = BlogAuthor(**author_dict)
+    db.session.add(author_object)
+    db.session.commit()
+    return jsonify(BlogAuthorSchema().dump(author))
