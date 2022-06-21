@@ -3,13 +3,6 @@ from sqlalchemy.sql import func
 from .utils import countries_enum, user_types_enum, gravatar
 from ..extensions import db, crypt
 
-role_tasks = {
-    'researcher': ['edi', 'edi_extra'],
-    'manager': [],
-    'admin': [],
-    'basic': []
-}
-
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,9 +36,19 @@ class User(db.Model):
         return gravatar(self.email)
 
     @property
+    def all_tasks(self):
+        role_tasks = {
+            'researcher': ['edi', 'edi_extra'],
+            'manager': [],
+            'admin': ['author'],
+            'basic': []
+        }
+        return ['email'] + role_tasks.get(self.role, [])
+
+    @property
     def todo(self):
         remaining_tasks = []
-        for t in role_tasks.get(self.role, []):
+        for t in self.all_tasks:
             if not getattr(self, t):
                 remaining_tasks.append(t)
         return remaining_tasks
@@ -53,7 +56,7 @@ class User(db.Model):
     @property
     def completion(self):
         todo = len(self.todo)
-        total = len(role_tasks.get(self.role, []))
+        total = len(self.all_tasks)
         if total == 0:
             return 100
-        return round(((total-todo)/total)*100)
+        return round(((total - todo) / total) * 100)

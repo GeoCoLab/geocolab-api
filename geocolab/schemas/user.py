@@ -14,5 +14,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
 
     name = ma.Str()
     todo = ma.List(ma.Str)
+    all_tasks = ma.List(ma.Str)
     gravatar = ma.Str()
     completion = ma.Integer()
+    author = ma.Nested('BlogAuthorSchema')
