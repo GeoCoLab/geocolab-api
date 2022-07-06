@@ -1,6 +1,5 @@
 from .utils import user_types_enum
 from .user import User
-from .form import Form, FormField
 from .blog import BlogPost, BlogAuthor, BlogTag
 from .analysis import Analysis
 from .application import Application

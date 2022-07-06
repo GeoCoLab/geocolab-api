@@ -1,8 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
+from sqlalchemy.orm import backref, declared_attr
+
 from ...extensions import db
-from sqlalchemy.orm import backref, declared_attr, declarative_mixin
 
 
 class UserDataMixin(object):
@@ -12,10 +13,6 @@ class UserDataMixin(object):
     @declared_attr
     def user_id(cls):
         return db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
-
-    @declared_attr
-    def form_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('form.id'))
 
     @declared_attr
     def user(cls):
