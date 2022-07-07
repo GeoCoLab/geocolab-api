@@ -10,7 +10,7 @@ from ...extensions import db
 class EDIData(UserDataMixin, db.Model):
     NAME = 'edi'
 
-    country = db.Column(db.String(10))
+    country = db.Column(db.Boolean)
     country_expand = db.Column(countries_enum)
     gender = db.Column(db.String(100))
     gender_expand = db.Column(db.String(200))
