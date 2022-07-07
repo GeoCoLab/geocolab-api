@@ -27,14 +27,12 @@ def refresh_expiring_jwts(response):
     refresh_token = False
     identity = None
     remember = False
-    create_refresh_tokens = False
     try:
         try:
             # check for access token
             verify_jwt_in_request()
             identity = User.query.get(get_jwt_identity())
             remember = should_remember(get_jwt_header())
-            create_refresh_tokens = True
             if nearly_expired(get_jwt()):
                 # nearly expired, needs refreshing
                 refresh_token = True
@@ -52,7 +50,7 @@ def refresh_expiring_jwts(response):
         return response
     if refresh_token:
         # either there's a nearly-expired access token or there's a refresh token
-        response = login_user(identity, remember, response, create_refresh_tokens)
+        response = login_user(identity, remember, response)
     return response
 
 
@@ -60,7 +58,7 @@ class DoubleExpired(Exception):
     pass
 
 
-def login_user(user_object, remember=False, response=None, create_refresh_tokens=False):
+def login_user(user_object, remember=False, response=None):
     """
     Shared method between login, register, and refresh_jwt.
     """
@@ -69,7 +67,7 @@ def login_user(user_object, remember=False, response=None, create_refresh_tokens
     access_token = create_access_token(identity=user_object,
                                        additional_claims={'user': user_dict, 'remember': remember})
     set_access_cookies(response, access_token)
-    if remember and create_refresh_tokens:
+    if remember:
         refresh_token = create_refresh_token(identity=user_object, expires_delta=timedelta(days=365))
         set_refresh_cookies(response, refresh_token, max_age=timedelta(days=365).total_seconds())
     return response
