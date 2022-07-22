@@ -15,6 +15,17 @@ class User(db.Model):
     role = db.Column(user_types_enum, server_default='basic', nullable=False)
     pronouns = db.Column(db.String(50))
 
+    managed_orgs = db.relationship('Org', secondary='org_manager', backref=db.backref('managers', lazy=True), lazy=True)
+    _facilities = db.relationship('Facility', secondary='facility_manager',
+                                  backref=db.backref('_managers', lazy=True), lazy=True)
+
+    @property
+    def managed_facilities(self):
+        facilities = [f for f in self._facilities]
+        for org in self.managed_orgs:
+            facilities += org.facilities
+        return facilities
+
     def password_set(self, plaintext):
         self.password = crypt.hash(plaintext)
 
@@ -59,3 +70,5 @@ class User(db.Model):
         if total == 0:
             return 100
         return round(((total - todo) / total) * 100)
+
+
