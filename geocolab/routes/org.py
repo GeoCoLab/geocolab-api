@@ -16,10 +16,25 @@ def list_all():
     return jsonify(OrgSchema(many=True).dump(Org.query.all()))
 
 
-@bp.route('/new', methods=['POST'])
+@bp.route('/<org_id>')
+def get_org_by_id(org_id):
+    org = Org.query.get(org_id)
+    if not org:
+        return jsonify({'error': 'Organisation/Institution not found.'}), 404
+    return jsonify(OrgSchema().dump(org))
+
+
+@bp.route('/save', methods=['POST'])
 @manager_required()
-def new():
-    new_org = OrgSchema().load(request.json.get('data'))
-    db.session.add(new_org)
+def save():
+    org_dict = OrgSchema().load(request.json)
+    if org_dict.get('id'):
+        org = Org.query.get(org_dict.get('id'))
+        for k, v in org_dict.items():
+            setattr(org, k, v)
+    else:
+        org = Org(**org_dict)
+        org.managers.append(current_user)
+    db.session.add(org)
     db.session.commit()
-    return jsonify(success=True)
+    return jsonify(OrgSchema().dump(org))
