@@ -18,3 +18,11 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     gravatar = ma.Str()
     completion = ma.Integer()
     author = ma.Nested('BlogAuthorSchema')
+
+
+class MinimalUserSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = User
+
+    name = ma.Str()
+    id = ma.Integer()

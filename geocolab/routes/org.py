@@ -11,16 +11,24 @@ from ..schemas import OrgSchema
 bp = Blueprint('org', __name__, url_prefix='/org')
 
 
-@bp.route('/')
+@bp.route('/all')
+@manager_required()
 def list_all():
-    return jsonify(OrgSchema(many=True).dump(Org.query.all()))
+    if current_user.is_admin:
+        all_orgs = Org.query.all()
+    else:
+        all_orgs = current_user.orgs
+    return jsonify(OrgSchema(many=True).dump(all_orgs))
 
 
 @bp.route('/<org_id>')
+@manager_required()
 def get_org_by_id(org_id):
     org = Org.query.get(org_id)
-    if not org:
+    if not org and current_user.is_admin:
         return jsonify({'error': 'Organisation/Institution not found.'}), 404
+    elif not org or not org.can_edit(current_user):
+        return jsonify({'error': 'Either does not exist or you do not have access.'}), 401
     return jsonify(OrgSchema().dump(org))
 
 
