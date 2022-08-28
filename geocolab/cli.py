@@ -35,7 +35,7 @@ def make_admin(email):
     else:
         user = User.query.filter_by(email='admin').one_or_none()
         if not user:
-            user = User(email='admin', given_name='GeoCoLab', family_name='Admin', country='GB')
+            user = User(email='admin', given_name='GeoCoLab', family_name='Admin')
             user.password_set(click.prompt('Password', hide_input=True))
             db.session.add(user)
             db.session.commit()
