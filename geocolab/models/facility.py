@@ -40,14 +40,12 @@ class Facility(db.Model):
     def closed_slots(self):
         return [s for s in self.slots if not s.is_open]
 
-    @property
-    def can_edit(self):
-        if not current_user:
-            return False
-        elif current_user.is_admin:
+    def can_edit(self, user=None):
+        user = user or current_user
+        if user.is_admin:
             return True
         else:
-            return current_user.id in [u.id for u in self.managers]
+            return user.id in [u.id for u in self.managers]
 
     def via(self, user):
         if self.id in [f.id for f in user._facilities]:

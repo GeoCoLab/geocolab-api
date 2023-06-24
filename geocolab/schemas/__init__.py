@@ -3,7 +3,7 @@
 
 from .user import UserSchema, MinimalUserSchema
 from .blog import BlogAuthorSchema, BlogTagSchema, BlogPostSchema, BlogSummarySchema
-from .analysis import AnalysisSchema
+from .analysis import AnalysisSchema, NestedAnalysisSchema
 from .application import ApplicationSchema
 from .facility import FacilitySchema
 from .offer import OfferSchema
